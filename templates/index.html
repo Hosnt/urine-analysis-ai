@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urine Microscopic Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #preview {
+            max-width: 300px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Upload Urine Sample Image</h1>
+    <input type="file" id="imageUpload" accept="image/*">
+    <br>
+    <img id="preview" src="" alt="Preview" style="display: none;">
+    <br>
+    <button onclick="analyzeImage()">Analyze</button>
+
+    <h2>Result:</h2>
+    <p id="result">Waiting for analysis...</p>
+
+    <script>
+        document.getElementById('imageUpload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview').src = e.target.result;
+                    document.getElementById('preview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function analyzeImage() {
+            const fileInput = document.getElementById('imageUpload');
+            if (!fileInput.files.length) {
+                alert("Please upload an image first.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("image", fileInput.files[0]);
+
+            fetch("http://127.0.0.1:5000/predict", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerText = "Prediction: " + data.prediction;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                document.getElementById("result").innerText = "Error analyzing image.";
+            });
+        }
+    </script>
+
+</body>
+</html>
